@@ -4,7 +4,7 @@ import {
   SWAPI_ROOT,
   SWAPI_PEOPLE,
   HTTPS,
-} from "../constants/api";
+} from "@constants/api";
 
 const getId = (url, category) => {
   const id = url.replace(HTTPS + SWAPI_ROOT + category, "").replace(/\//g, "");
