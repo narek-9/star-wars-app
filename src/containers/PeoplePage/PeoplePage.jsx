@@ -3,17 +3,30 @@ import PropTypes from "prop-types";
 
 import { withErrorApi } from "@hoc-helpers/withErrorApi";
 import PeopleList from "@components/PeoplePage/PeopleList";
+import PeopleNavigation from "@components/PeoplePage/PeopleNavigation";
 import { getApiResource } from "@utils/network";
-import { getPeopleId, getPeopleImage } from "@services/getPeopleData";
+import {
+  getPeopleId,
+  getPeopleImage,
+  getPeoplePageId,
+} from "@services/getPeopleData";
 import { API_PEOPLE } from "@constants/api";
+import { useQueryParams } from "@hooks/useQueryParams";
 
 import styles from "./PeoplePage.module.css";
 
 const PeoplePage = ({ setErrorApi }) => {
   const [people, setpeople] = useState(null);
+  const [prevPage, setPrevPage] = useState(null);
+  const [nextPage, setNextPage] = useState(null);
+  const [counterPage, setCounterPage] = useState(1);
+
+  const query = useQueryParams();
+  const queryPage = query.get("page");
 
   const getResource = async (url) => {
     const res = await getApiResource(url);
+
     if (res) {
       const peopleList = res.results.map(({ name, url }) => {
         const id = getPeopleId(url);
@@ -25,6 +38,9 @@ const PeoplePage = ({ setErrorApi }) => {
         };
       });
       setpeople(peopleList);
+      setPrevPage(res.previous);
+      setNextPage(res.next);
+      setCounterPage(getPeoplePageId(url));
       setErrorApi(false);
     } else {
       setErrorApi(true);
@@ -32,12 +48,17 @@ const PeoplePage = ({ setErrorApi }) => {
   };
 
   useEffect(() => {
-    getResource(API_PEOPLE);
+    getResource(API_PEOPLE + queryPage);
   }, []);
 
   return (
     <>
-      <h1 className="header__text">Navigation</h1>
+      <PeopleNavigation
+        getResource={getResource}
+        prevPage={prevPage}
+        nextPage={nextPage}
+        counterPage={counterPage}
+      />
       {people && <PeopleList people={people} />}
     </>
   );
